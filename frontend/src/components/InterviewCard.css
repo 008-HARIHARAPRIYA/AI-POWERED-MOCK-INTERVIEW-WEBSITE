@@ -1,0 +1,178 @@
+/* Card container */
+.interview-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: rgba(24, 23, 23, 0.75);
+  backdrop-filter: blur(8px);
+  border-radius: 16px;
+  padding: 16px;
+  width: 260px;
+  min-height: 280px;
+  margin: 12px;
+  box-shadow: 0px 8px 24px rgba(171, 166, 166, 0.4);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.interview-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+}
+
+/* Logo section - circle */
+.logo-section {
+  align-self: flex-start;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 8px;
+}
+
+.logo-section img {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: contain;
+  background-color: #fff;
+  padding: 4px;
+}
+
+/* Type badge top-right */
+.type-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: linear-gradient(135deg, #4f46e5, #3b82f6);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 10px;
+}
+
+/* Info section */
+.info-section {
+  margin-top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+/* Role at top */
+.info-section h3 {
+  font-size: 1rem;
+  color: #fff;
+  margin: 0 0 8px 0;
+  font-weight: 600;
+}
+
+/* Level */
+.level {
+  font-size: 0.85rem;
+  color: #cbd5e1;
+  margin: 0 0 3px 0;
+}
+
+/* Date & rating row */
+.bottom-row {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 6px;
+}
+
+.rating-section {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.rating-star {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
+}
+
+.rating-value {
+  color: #ffd700;
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-left: 2px;
+}
+
+.date-section {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.calendar-icon {
+  font-size: 16px;
+}
+
+/* Sentence/message */
+.interview-message {
+  color: #bdbdbd;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 8px;
+  text-align: left;
+}
+
+.interview-message span {
+  color: #fff;
+}
+
+/* Techstack */
+.techstack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 6px;
+  margin-bottom: 10px;
+}
+
+.tech-item {
+  display: flex;
+  align-items: center;
+  background-color: rgba(255,255,255,0.1);
+  padding: 3px 7px;
+  border-radius: 7px;
+  gap: 5px;
+}
+
+.tech-logo {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  border-radius: 4px;
+}
+
+.tech-name {
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+/* View Interview button */
+.view-btn {
+  margin-top: 10px;
+  background: #3f0569;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 7px 0;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  transition: background 0.2s;
+}
+
+.view-btn:hover {
+  background: #5548c8;
+}

@@ -1,0 +1,77 @@
+/* Full-page landing with background */
+.landing-page {
+  height: 100vh;
+  width: 100%;
+  background: url("https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1470&q=80")
+    no-repeat center center/cover;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  position: relative;
+}
+
+/* Dark overlay for readability */
+.overlay {
+  background: rgba(40, 38, 38, 0.45);
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.content {
+  color: #ffffff; /* White text */
+  text-align: center;
+  max-width: 700px;
+}
+
+/* Big app name - hero style */
+.app-name {
+  font-size: clamp(40px, 12vw, 80px); /* responsive: min 80px, max 150px, scales with viewport */
+  font-weight: 900; /* very bold */
+  margin-bottom: 20px;
+  color: #eeefef; /* accent color */
+  text-shadow: 2px 2px 15px rgba(0,0,0,0.6); /* stronger shadow for contrast */
+}
+
+/* Description */
+.description {
+  font-size: clamp(18px, 2.5vw, 28px); /* responsive size */
+  margin-bottom: 40px;
+  line-height: 1.6;
+  color: #e0e7ff;
+  text-shadow: 1px 1px 8px rgba(0,0,0,0.5);
+}
+
+/* Gradient button */
+.start-btn {
+  padding: 18px 42px;
+  font-size: 20px;
+  font-weight: bold;
+  border: none;
+  border-radius: 35px;
+  cursor: pointer;
+  color: white;
+  background: linear-gradient(90deg, #22c55e, #84cc16);
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+}
+
+.start-btn:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+}
+
+
+/* Description */
+.description {
+  font-size: 1.5rem;
+  margin-bottom: 40px;
+  line-height: 1.6;
+  color: #e0e7ff; /* subtle matching color */
+  text-shadow: 1px 1px 5px rgba(0,0,0,0.5);
+}
+

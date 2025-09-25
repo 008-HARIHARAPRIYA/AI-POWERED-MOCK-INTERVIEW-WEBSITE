@@ -1,0 +1,141 @@
+.agent-page {
+  margin-top: 70px; /* revert to original */
+  min-height: calc(100vh - 70px);
+  background: #181717;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  text-align: center;
+  padding: 20px;
+}
+
+.title {
+  font-weight: bold;
+  font-size: 32px;
+  margin-bottom: 40px;
+  background: linear-gradient(90deg, #b06ab3, #8a2be2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.cards {
+  display: flex;
+  justify-content: space-between;
+  width: 90%; /* take 90% of the page */
+  max-width: 1200px;
+  gap: 40px;
+  margin-bottom: 32px;
+}
+
+.card {
+  flex: 1;
+  min-height: 320px;
+  background: rgba(138, 43, 226, 0.15);
+  border: 1px solid rgba(138, 43, 226, 0.5);
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0px 12px 30px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(12px);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 0 35px rgba(176, 106, 179, 0.6);
+}
+
+.logo-circle {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 50%;
+  width: 100px;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 18px;
+  overflow: hidden;
+  box-shadow: 0 0 14px rgba(255, 255, 255, 0.25);
+}
+
+.app-logo {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+}
+
+.user-avatar {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.card-title {
+  font-weight: bold;
+  font-size: 20px;
+  color: #fff;
+}
+
+.message-bar {
+  background: rgba(138, 43, 226, 0.1);
+  border: 1px solid rgba(138, 43, 226, 0.4);
+  backdrop-filter: blur(8px);
+  border-radius: 12px;
+  padding: 14px 28px;
+  min-width: 420px;
+  font-size: 16px;
+  color: #e0e0e0;
+  margin-bottom: 28px;
+  box-shadow: 0 0 14px rgba(0, 0, 0, 0.25);
+}
+
+.go-btn {
+  background: linear-gradient(90deg, #b06ab3, #8a2be2);
+  color: #fff;
+  border: none;
+  border-radius: 22px;
+  padding: 12px 38px;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 0 18px rgba(176, 106, 179, 0.5);
+  transition: 0.3s ease;
+}
+
+.go-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 30px rgba(176, 106, 179, 0.8);
+}
+
+/* Speaking animation only activates on button click */
+.speaking-animation {
+  animation: glowPulseFast 0.8s infinite ease-in-out;
+}
+
+@keyframes glowPulseFast {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 10px rgba(176, 106, 179, 0.4),
+                0 0 18px rgba(176, 106, 179, 0.6);
+  }
+  50% {
+    transform: scale(1.1);
+    box-shadow: 0 0 18px rgba(176, 106, 179, 0.7),
+                0 0 32px rgba(176, 106, 179, 1);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 10px rgba(176, 106, 179, 0.4),
+                0 0 18px rgba(176, 106, 179, 0.6);
+  }
+}
+
+/* Add this wrapper for content spacing */
+.agent-content {
+  margin-top: 50px; /* pushes only the content down */
+}

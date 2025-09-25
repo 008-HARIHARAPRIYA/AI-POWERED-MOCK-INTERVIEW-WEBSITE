@@ -1,0 +1,28 @@
+.auth-wrapper {
+  min-height: 100vh;
+  background: url("https://png.pngtree.com/thumb_back/fh260/background/20230408/pngtree-robot-white-cute-robot-blue-light-background-image_2199825.jpg")
+    no-repeat center center/cover;
+}
+
+.bg-overlay {
+  background: rgba(60, 0, 100, 0.7);
+}
+
+.form-slider {
+  display: flex;
+  width: 200%;
+  transition: transform 0.6s ease-in-out;
+}
+
+.form-panel {
+  width: 50%;
+  min-height: 100%;
+}
+
+.show-signup {
+  transform: translateX(0%);
+}
+
+.show-login {
+  transform: translateX(-50%);
+}
