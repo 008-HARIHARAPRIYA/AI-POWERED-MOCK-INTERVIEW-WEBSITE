@@ -7,7 +7,7 @@ backend/node_modules/
 config.js
 backend/.env
 .env
-
+backend/uploads/
 # Logs and builds
 npm-debug.log*
 yarn-debug.log*

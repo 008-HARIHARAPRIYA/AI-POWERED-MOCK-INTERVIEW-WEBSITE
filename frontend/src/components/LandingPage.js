@@ -10,7 +10,7 @@ function LandingPage() {
     <div className="landing-page">
       <div className="overlay">
         <div className="content text-center">
-          <h1 className="app-name">MockMate</h1>
+          <h1 className="app-name text-center">MockMate</h1>
           <p className="description">
             Prepare smart with real-time mock interviews and actionable feedback, powered by AI.
           </p>

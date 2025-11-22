@@ -1,20 +1,13 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import fetch from "node-fetch";
 import Interview from "../models/Interview.js";
 import getRandomInterviewCover from "../utils/getRandomInterviewCover.js";
-import { createRequire } from 'module';
 
-// Use createRequire to import CommonJS config in ES module
-const require = createRequire(import.meta.url);
-const config = require('../../config.js');
-
-// Initialize Gemini AI with API key from config
-const genAI = new GoogleGenerativeAI(config.GEMINI_API_KEY);
+// Gemini API Key
+const GEMINI_API_KEY = "AIzaSyC6Xg6KAM3dVzthSa17DU4oN0SI7Hx3Lpc";
 
 export const generateInterview = async ({ type, role, level, techstack, amount }, userId) => {
   console.log('🚀 Starting interview generation...');
   console.log('Parameters:', { type, role, level, techstack, amount, userId });
-
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
   const prompt = `
 Prepare ${amount} interview questions for a job.
@@ -32,14 +25,39 @@ The questions are going to be read by a voice assistant so do not use "/" or "*"
   let questions;
   try {
     console.log('🤖 Calling Gemini API...');
-    const result = await model.generateContent(prompt);
-    const text = await result.response.text();
     
-    console.log('📥 Raw AI response:', text);
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ 
+            parts: [{ text: prompt }] 
+          }]
+        })
+      }
+    );
+
+    const data = await response.json();
+    
+    console.log('📥 Raw AI response:', JSON.stringify(data, null, 2));
+    
+    if (data.error) {
+      throw new Error(`Gemini API error: ${data.error.message}`);
+    }
+
+    if (!data.candidates || !data.candidates[0] || !data.candidates[0].content) {
+      throw new Error("Invalid response structure from Gemini API");
+    }
+
+    const text = data.candidates[0].content.parts[0].text;
     
     if (!text) {
       throw new Error("No text returned by AI");
     }
+
+    console.log('📄 Text from AI:', text);
 
     // Clean the response to ensure it's valid JSON
     const cleanedText = text.trim().replace(/```json|```/g, '').trim();

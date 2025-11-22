@@ -15,26 +15,30 @@ function Navbar({ name, profileImage }) {
       </div>
 
       <div className="navbar-right">
-        <div className="navbar-user-info" style={{ display: "flex", alignItems: "center" }}>
+        <div
+          className="navbar-user-info"
+          style={{ display: "flex", alignItems: "center" }}
+        >
           <span
             style={{
               marginRight: "10px",
               color: "#fff",
               fontWeight: "600",
-              fontFamily:"monospace",
+              fontFamily: "monospace",
               fontSize: "22px",
-              letterSpacing: "0.5px"
+              letterSpacing: "0.5px",
             }}
           >
-            Hi,{name || "User"}
+            Hi, {name || "User"}
           </span>
-          {profileImage && (
-            <img
-              src={profileImage}
-              alt="Profile"
-              style={{ width: "40px", height: "40px", borderRadius: "50%" }}
-            />
-          )}
+          <img
+            src={
+              profileImage ||
+              "https://via.placeholder.com/40?text=U" // fallback avatar
+            }
+            alt="Profile"
+            style={{ width: "40px", height: "40px", borderRadius: "50%" }}
+          />
         </div>
       </div>
     </nav>

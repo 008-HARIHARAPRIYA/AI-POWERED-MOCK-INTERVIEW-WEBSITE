@@ -30,11 +30,14 @@
 
 /* Big app name - hero style */
 .app-name {
-  font-size: clamp(40px, 12vw, 80px); /* responsive: min 80px, max 150px, scales with viewport */
-  font-weight: 900; /* very bold */
+  font-size: clamp(200px, 50vw, 170px); /* Bigger font, fully responsive */
+  font-weight: 1500; /* super bold */
   margin-bottom: 20px;
-  color: #eeefef; /* accent color */
-  text-shadow: 2px 2px 15px rgba(0,0,0,0.6); /* stronger shadow for contrast */
+  color: #ffffff; /* bright white */
+  text-shadow: 3px 3px 20px rgba(0, 0, 0, 0.8); /* stronger shadow for readability */
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 /* Description */

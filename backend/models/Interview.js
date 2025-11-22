@@ -6,7 +6,7 @@ const interviewSchema = new mongoose.Schema({
   level: String,
   techstack: [String],
   questions: [String],
-  userId: { type: Number, required: true }, // custom auto-incremented userId
+  userId: { type: Number, required: true }, 
   finalized: Boolean,
   coverImage: String,
   createdAt: String,
