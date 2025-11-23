@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const API_KEY = "AIzaSyC6Xg6KAM3dVzthSa17DU4oN0SI7Hx3Lpc";
+const API_KEY = process.env.API_KEY;
 
 console.log("Testing Gemini API...\n");
 

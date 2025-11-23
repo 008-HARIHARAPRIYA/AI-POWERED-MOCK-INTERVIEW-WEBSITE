@@ -1,10 +1,11 @@
 import fetch from "node-fetch";
 import Interview from "../models/Interview.js";
 import getRandomInterviewCover from "../utils/getRandomInterviewCover.js";
+import config from "../../config.js";
+const { API_KEY } = config;
 
 // Gemini API Key
-const GEMINI_API_KEY = "AIzaSyC6Xg6KAM3dVzthSa17DU4oN0SI7Hx3Lpc";
-
+const GEMINI_API_KEY = API_KEY;
 export const generateInterview = async ({ type, role, level, techstack, amount }, userId) => {
   console.log('🚀 Starting interview generation...');
   console.log('Parameters:', { type, role, level, techstack, amount, userId });
