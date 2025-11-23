@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const API_KEY = process.env.API_KEY;
+const API_KEY = process.env.GEMINI_KEY;
 
 console.log("Gemini API Key:", API_KEY);
 
