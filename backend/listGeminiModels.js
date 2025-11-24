@@ -17,7 +17,7 @@ console.log("Testing Gemini API...\n");
         body: JSON.stringify({
           contents: [{ 
             parts: [{ 
-              text: "Say hello" 
+              text: "What is postman?" 
             }] 
           }]
         })

@@ -7,6 +7,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const GEMINI_API_KEY = process.env.GEMINI_KEY;
+console.log("GEMINI_API_KEY:", GEMINI_API_KEY);
 export const generateInterview = async ({ type, role, level, techstack, amount }, userId) => {
   console.log('🚀 Starting interview generation...');
   console.log('Parameters:', { type, role, level, techstack, amount, userId });
