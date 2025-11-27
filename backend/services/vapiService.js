@@ -1,171 +1,140 @@
-// vapiService.js (FINAL WORKING VERSION)
-// ---------------------------------------------------------
-
 import fetch from "node-fetch";
-import Interview from "../models/Interview.js";
 import getRandomInterviewCover from "../utils/getRandomInterviewCover.js";
 import dotenv from "dotenv";
 
 dotenv.config();
-
 const GEMINI_API_KEY = process.env.GEMINI_KEY;
 
-/* ============================================================
-   1) GENERATE INTERVIEW QUESTIONS
-   ============================================================ */
-export const generateInterview = async ({ type, role, level, techstack, amount }, userId) => {
-  console.log("\n\n=====================================================");
-  console.log("🎯 GENERATING INTERVIEW FOR USER:", userId);
-  console.log("=====================================================\n");
+/**
+ * Generate Interview Questions (console only, no DB)
+ */
+export const generateInterview = async (req, res) => {
+  try {
+    const { type, role, level, techstack, amount, userId } = req.body;
+    
+    console.log('🚀 GENERATING INTERVIEW');
+    console.log('Parameters:', { type, role, level, techstack, amount, userId });
 
-  if (!userId || isNaN(userId)) {
-    throw new Error("Invalid userId given to generateInterview()");
-  }
+    if (!userId || isNaN(userId)) {
+      return res.status(400).json({ error: 'Invalid userId - must be a number' });
+    }
+    if (!role || !type || !level || !techstack || !amount) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
 
-  const prompt = `
+    const prompt = `
 Prepare ${amount} interview questions for a job.
 The job role is ${role}
 The job experience level is ${level}.
 The tech stack used in the job is: ${techstack}.
 The focus between behavioural and technical questions should lean towards: ${type}.
-Return ONLY a JSON array like ["Question 1", "Question 2"].
-Do NOT add explanation.
-Do NOT use / or * or Markdown formatting.
+Return ONLY a JSON array like ["Question 1", "Question 2", ...].
+Do not ask candidates to write actual code.
+The questions are going to be read by a voice assistant so do not use "/" or "*" or any special characters.
 `;
 
-  console.log("📝 Prompt:");
-  console.log(prompt);
+    let questions;
+    try {
+      console.log('🤖 Calling Gemini...');
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+        }
+      );
 
-  let questions = [];
+      const data = await response.json();
+      const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
 
-  try {
-    console.log("🤖 Calling Gemini...");
+      if (!text) throw new Error("No text from AI");
 
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-        }),
-      }
-    );
+      const cleanedText = text.trim().replace(/```json|```/g, '').trim();
+      questions = JSON.parse(cleanedText);
 
-    const data = await response.json();
-    const raw = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!Array.isArray(questions)) throw new Error('Not an array');
 
-    if (!raw) throw new Error("Gemini returned empty result");
-
-    const cleaned = raw.replace(/```json|```/g, "").trim();
-    questions = JSON.parse(cleaned);
-
-    if (!Array.isArray(questions)) {
-      throw new Error("Gemini did not return an array");
+      console.log('✅ Generated Questions:', questions);
+    } catch (err) {
+      console.error("❌ Gemini failed:", err.message);
+      return res.status(500).json({ error: `AI generation failed: ${err.message}` });
     }
 
-  } catch (err) {
-    console.error("❌ Gemini failed:", err.message);
-    throw new Error("AI question generation failed");
+    // ❌ NO DATABASE SAVE — just console output
+    console.log('💾 Interview Info (Console Only):', {
+      role,
+      type,
+      level,
+      techstack: techstack.split(",").map(s => s.trim()),
+      questions,
+      amount: Number(amount),
+      userId: Number(userId),
+      finalized: true,
+      coverImage: getRandomInterviewCover(),
+      status: 'pending',
+      createdAt: new Date().toISOString()
+    });
+
+    return res.status(200).json({ 
+      message: 'Interview generated successfully (console only)',
+      questions 
+    });
+
+  } catch (error) {
+    console.error("❌ UNEXPECTED ERROR:", error);
+    return res.status(500).json({ error: error.message });
   }
-
-  console.log("✅ Questions generated:", questions.length);
-
-  // SAVE
-  const interview = new Interview({
-    role,
-    type,
-    level,
-    techstack: techstack.split(",").map((s) => s.trim()),
-    questions,
-    amount: Number(amount),
-    userId: Number(userId),
-    finalized: true,
-    coverImage: getRandomInterviewCover(),
-    status: "pending",
-    completedAt: null,
-  });
-
-  await interview.save();
-
-  console.log("💾 Interview saved with _id:", interview._id.toString());
-
-  return interview;
 };
 
-/* ============================================================
-   2) PROCESS TRANSCRIPT
-   ============================================================ */
-export const processTranscript = async (userId, transcript) => {
-  console.log("\n\n=====================================================");
-  console.log("📜 PROCESSING TRANSCRIPT FOR USER:", userId);
-  console.log("=====================================================");
-
-  // PRINT LIKE YOUR REFERENCE
-  transcript.forEach((msg, i) => {
-    const who = msg.role === "user" ? "👤 USER" : "🤖 AI";
-    console.log(`[${i + 1}] ${who}: ${msg.text}`);
+/**
+ * Process Transcript (console only)
+ */
+export const processTranscript = async (transcript) => {
+  console.log("\n════════ TRANSCRIPT RECEIVED ════════");
+  transcript.forEach((msg, index) => {
+    const speaker = msg.role === "user" ? "👤 USER" : "🤖 ASSISTANT";
+    console.log(`[${index + 1}] ${speaker}: ${msg.text}`);
   });
-
-  // GET LAST interview of this user
-  const interview = await Interview.findOne({ userId }).sort({ createdAt: -1 });
-
-  if (!interview) {
-    console.error("❌ No interview found for user:", userId);
-    return { success: false, message: "Interview not found" };
-  }
-
-  console.log("📡 Sending transcript to Gemini for evaluation...");
 
   const transcriptText = transcript.map(t => `${t.role}: ${t.text}`).join("\n");
 
+  console.log("\n📡 Sending transcript to Gemini for evaluation...");
+
   const feedbackRaw = await analyzeTranscript(transcriptText);
 
-  console.log("\n🎉 RAW FEEDBACK FROM GEMINI:");
+  console.log("\n🎉 FEEDBACK GENERATED BY GEMINI:");
   console.log(feedbackRaw);
 
-  const feedbackStructured = parseFeedback(feedbackRaw);
-
-  // SAVE
-  interview.transcript = transcript;
-  interview.feedback = feedbackStructured;
-  interview.status = "completed";
-  interview.completedAt = new Date();
-
-  await interview.save();
-
-  console.log("✅ Transcript + Feedback saved successfully");
-
-  return {
-    success: true,
-    message: "Transcript processed",
-    answersCount: transcript.length,
-    feedback: feedbackStructured,
-  };
+  return feedbackRaw;
 };
 
-/* ============================================================
-   3) ANALYZE TRANSCRIPT
-   ============================================================ */
+/**
+ * Analyze Transcript with Gemini
+ */
 export const analyzeTranscript = async (transcript) => {
   const evaluationPrompt = `
-You are an expert interviewer. Evaluate the candidate.
-Do NOT add extra headings. Use EXACT format:
+You are a professional interviewer analyzing a mock interview.
+I'll give you the transcript and you assess the candidate.
+Please score the candidate from 0 to 100 in the following areas. 
+Do NOT change category names. Do NOT add new categories.
+
+Format your response EXACTLY like this:
 
 **Communication Skills: [SCORE]/100**
-[Feedback]
+[Detailed feedback]
 
 **Technical Knowledge: [SCORE]/100**
-[Feedback]
+[Detailed feedback]
 
 **Problem-solving: [SCORE]/100**
-[Feedback]
+[Detailed feedback]
 
 **Cultural & Role Fit: [SCORE]/100**
-[Feedback]
+[Detailed feedback]
 
 **Confidence and Clarity: [SCORE]/100**
-[Feedback]
+[Detailed feedback]
 
 **Overall Feedback:**
 [Summary]
@@ -180,61 +149,17 @@ ${transcript}
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: evaluationPrompt }] }],
-        }),
+        body: JSON.stringify({ contents: [{ parts: [{ text: evaluationPrompt }] }] })
       }
     );
 
     const data = await response.json();
-    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    const output = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!output) throw new Error("No feedback returned from Gemini");
 
-    if (!text) throw new Error("Empty feedback from Gemini");
-
-    return text.trim();
+    return output.trim();
   } catch (err) {
-    console.error("❌ Gemini Feedback Error:", err.message);
-    return `Feedback failed: ${err.message}`;
+    console.error("❌ FEEDBACK MODEL FAILED:", err);
+    return `Feedback generation failed: ${err.message}`;
   }
-};
-
-/* ============================================================
-   4) PARSE FEEDBACK
-   ============================================================ */
-const parseFeedback = (raw) => {
-  const get = (label) => {
-    const r = new RegExp(`${label}:.*?(\\d+)/100[\\s\\S]*?(?=\\*\\*|$)`);
-    const m = raw.match(r);
-    return m ? parseInt(m[1]) : 0;
-  };
-
-  const getText = (label) => {
-    const r = new RegExp(`${label}:.*?\\d+/100\\s*([\\s\\S]*?)(?=\\*\\*|$)`);
-    const m = raw.match(r);
-    return m ? m[1].trim() : "";
-  };
-
-  return {
-    communicationSkills: {
-      score: get("Communication Skills"),
-      feedback: getText("Communication Skills"),
-    },
-    technicalKnowledge: {
-      score: get("Technical Knowledge"),
-      feedback: getText("Technical Knowledge"),
-    },
-    problemSolving: {
-      score: get("Problem-solving"),
-      feedback: getText("Problem-solving"),
-    },
-    culturalFit: {
-      score: get("Cultural & Role Fit"),
-      feedback: getText("Cultural & Role Fit"),
-    },
-    confidenceAndClarity: {
-      score: get("Confidence and Clarity"),
-      feedback: getText("Confidence and Clarity"),
-    },
-    overallFeedback: (raw.match(/Overall Feedback:\s*([\s\S]*)$/)?.[1] || "").trim(),
-  };
 };
