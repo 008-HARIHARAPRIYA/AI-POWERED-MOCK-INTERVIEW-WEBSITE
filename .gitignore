@@ -6,6 +6,7 @@ backend/node_modules/
 # Secrets
 config.js
 backend/.env
+frontend/.env
 .env
 backend/uploads/
 # Logs and builds
