@@ -1,4 +1,4 @@
-// vapiService.js - UPDATED VERSION
+// vapiService.js - FINAL COMPLETE VERSION (Use This!)
 import fetch from "node-fetch";
 import Interview from "../models/Interview.js";
 import getRandomInterviewCover from "../utils/getRandomInterviewCover.js";
@@ -10,26 +10,25 @@ const GEMINI_API_KEY = process.env.GEMINI_KEY;
 
 /**
  * Generate Interview Questions and Save to DB (Only Basic Details)
+ * @param {Object} body - Request body containing interview parameters
+ * @param {Number} userId - User ID
+ * @returns {Object} Interview object
  */
-export const generateInterview = async (req, res) => {
+export const generateInterview = async (body, userId) => {
   try {
-    const { type, role, level, techstack, amount, userId } = req.body;
+    const { type, role, level, techstack, amount } = body;
     
     console.log('🚀 GENERATING INTERVIEW');
     console.log('Parameters:', { type, role, level, techstack, amount, userId });
 
     // ✅ Validate userId is a number
     if (!userId || isNaN(userId)) {
-      return res.status(400).json({ 
-        error: 'Invalid userId - must be a number'
-      });
+      throw new Error('Invalid userId - must be a number');
     }
 
     // Validate other fields
     if (!role || !type || !level || !techstack || !amount) {
-      return res.status(400).json({ 
-        error: 'Missing required fields'
-      });
+      throw new Error('Missing required fields');
     }
 
     // Generate questions with Gemini
@@ -73,7 +72,7 @@ The questions are going to be read by a voice assistant so do not use "/" or "*"
       
     } catch (err) {
       console.error("❌ Gemini failed:", err.message);
-      return res.status(500).json({ error: `AI generation failed: ${err.message}` });
+      throw new Error(`AI generation failed: ${err.message}`);
     }
 
     // ✅ SAVE ONLY BASIC DETAILS TO DATABASE
@@ -113,25 +112,26 @@ The questions are going to be read by a voice assistant so do not use "/" or "*"
       
       console.log('📤 RETURNING RESPONSE with _id:', response._id);
       
-      return res.status(200).json(response);
+      return response;
       
     } catch (saveError) {
       console.error("❌❌❌ DATABASE SAVE FAILED:", saveError);
       console.error("Error details:", saveError.message);
       console.error("Stack:", saveError.stack);
-      return res.status(500).json({ 
-        error: `Database save failed: ${saveError.message}` 
-      });
+      throw new Error(`Database save failed: ${saveError.message}`);
     }
     
   } catch (error) {
     console.error("❌ UNEXPECTED ERROR:", error);
-    return res.status(500).json({ error: error.message });
+    throw error;
   }
 };
 
 /**
  * Process Transcript - Print to Console and Analyze with Gemini (NO DB STORAGE)
+ * @param {Number} userId - User ID
+ * @param {Array} transcript - Array of transcript messages
+ * @returns {Object} Result object with success status and feedback
  */
 export const processTranscript = async (userId, transcript) => {
   console.log("\n\n═══════════════════════════════════════════════════════════");
@@ -174,6 +174,8 @@ export const processTranscript = async (userId, transcript) => {
 
 /**
  * Analyze Transcript with Gemini
+ * @param {String} transcript - Full transcript text
+ * @returns {String} Feedback from Gemini
  */
 export const analyzeTranscript = async (transcript) => {
   const evaluationPrompt = `
@@ -237,6 +239,8 @@ ${transcript}
 
 /**
  * Parse Gemini feedback into structured format
+ * @param {String} rawFeedback - Raw feedback text from Gemini
+ * @returns {Object} Structured feedback object
  */
 const parseFeedback = (rawFeedback) => {
   const feedback = {
