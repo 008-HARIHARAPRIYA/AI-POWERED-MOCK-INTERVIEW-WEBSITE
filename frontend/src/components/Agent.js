@@ -1,3 +1,4 @@
+// Agent.js - UPDATED VERSION
 import React, { useState, useEffect, useRef } from "react";
 import Vapi from "@vapi-ai/web";
 import Navbar from "./Navbar";
@@ -26,6 +27,7 @@ function Agent() {
   }
 
   useEffect(() => {
+    console.log("🚀 Initializing VAPI...");
     const vapi = new Vapi(process.env.REACT_APP_VAPI_PUBLIC_KEY);
     vapiRef.current = vapi;
 
@@ -40,12 +42,13 @@ function Agent() {
 
     vapi.on("call-end", async () => {
       console.log("📞 Call ended");
+      console.log("📋 Final transcript:", transcriptRef.current);
       setIsCallActive(false);
       setAnimate(false);
       setMessage("Processing your responses...");
-
+      
       if (transcriptRef.current.length > 0) {
-        console.log("📋 Final transcript:", transcriptRef.current);
+        await saveTranscript();
       } else {
         setMessage("No responses recorded.");
       }
@@ -58,14 +61,22 @@ function Agent() {
           text: message.transcript,
           timestamp: new Date().toISOString()
         };
+
         transcriptRef.current = [...transcriptRef.current, newEntry];
         setTranscript(prev => [...prev, newEntry]);
 
-        if (message.role === "assistant") setMessage(message.transcript);
+        if (message.role === "assistant") {
+          setMessage(message.transcript);
+        }
       }
 
-      if (message.type === "speech-start") setAnimate(true);
-      if (message.type === "speech-end") setAnimate(false);
+      if (message.type === "speech-start") {
+        setAnimate(true);
+      }
+      
+      if (message.type === "speech-end") {
+        setAnimate(false);
+      }
     });
 
     vapi.on("error", (error) => {
@@ -76,9 +87,52 @@ function Agent() {
     });
 
     return () => {
-      if (vapiRef.current) vapiRef.current.stop();
+      if (vapiRef.current) {
+        vapiRef.current.stop();
+      }
     };
   }, []);
+
+  const saveTranscript = async () => {
+    try {
+      const userId = user.userId;
+      
+      console.log('💾 Sending transcript for analysis (userId):', userId);
+
+      const response = await fetch(
+        "http://localhost:5000/api/vapi/process-transcript",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId: userId,
+            transcript: transcriptRef.current,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (data.success) {
+        setMessage(`Interview completed! Analysis complete.`);
+        
+        setTimeout(() => {
+          window.location.href = "/dashboard";
+        }, 2000);
+      } else {
+        setMessage("Analysis completed: " + data.message);
+        setTimeout(() => {
+          window.location.href = "/dashboard";
+        }, 2000);
+      }
+    } catch (error) {
+      console.error('Error processing transcript:', error);
+      setMessage("Interview completed. Check console for analysis.");
+      setTimeout(() => {
+        window.location.href = "/dashboard";
+      }, 2000);
+    }
+  };
 
   const startInterview = async () => {
     try {
@@ -86,6 +140,7 @@ function Agent() {
       const userName = user.name || "User";
 
       console.log('🎯 Starting interview for userId:', userId);
+
       setMessage("Connecting to interview assistant...");
 
       await vapiRef.current.start(
@@ -122,8 +177,11 @@ function Agent() {
   };
 
   const handleToggle = () => {
-    if (isCallActive) endCall();
-    else startInterview();
+    if (isCallActive) {
+      endCall();
+    } else {
+      startInterview();
+    }
   };
 
   return (
@@ -132,11 +190,15 @@ function Agent() {
       <div className="agent-page">
         <h2 className="title">AI Mock Interview</h2>
         <br /><br /><br /><br />
-
+        
         <div className="cards">
           <div className="card interviewer-card">
             <div className={`logo-circle ${animate ? "speaking-animation" : ""}`}>
-              <img src="https://img.freepik.com/premium-photo/cute-mini-robot_553012-44382.jpg?w=996" alt="App Logo" className="app-logo" />
+              <img
+                src="https://img.freepik.com/premium-photo/cute-mini-robot_553012-44382.jpg?w=996"
+                alt="App Logo"
+                className="app-logo"
+              />
             </div>
             <div className="card-title">AI Interviewer</div>
           </div>
@@ -151,7 +213,11 @@ function Agent() {
 
         <div className="message-bar">{message}</div>
 
-        <button className="go-btn" onClick={handleToggle} disabled={!user.name}>
+        <button 
+          className="go-btn" 
+          onClick={handleToggle}
+          disabled={!user.name}
+        >
           {isCallActive ? "End Interview" : "Start Interview"}
         </button>
 
@@ -160,8 +226,13 @@ function Agent() {
             <h3>Live Transcript ({transcript.length} messages):</h3>
             <div className="transcript-messages">
               {transcript.map((msg, idx) => (
-                <div key={idx} className={`transcript-message ${msg.role}`}>
-                  <strong>{msg.role === "user" ? "You" : "Interviewer"}:</strong>{" "}
+                <div
+                  key={idx}
+                  className={`transcript-message ${msg.role}`}
+                >
+                  <strong>
+                    {msg.role === "user" ? "You" : "Interviewer"}:
+                  </strong>{" "}
                   <span>{msg.text}</span>
                 </div>
               ))}
@@ -169,7 +240,17 @@ function Agent() {
           </div>
         )}
 
-        <div style={{ position: 'fixed', bottom: '10px', right: '10px', background: 'rgba(0,0,0,0.8)', color: 'white', padding: '10px', fontSize: '12px', maxWidth: '300px', borderRadius: '5px' }}>
+        <div style={{ 
+          position: 'fixed', 
+          bottom: '10px', 
+          right: '10px', 
+          background: 'rgba(0,0,0,0.8)', 
+          color: 'white', 
+          padding: '10px',
+          fontSize: '12px',
+          maxWidth: '300px',
+          borderRadius: '5px'
+        }}>
           <div><strong>Debug Info:</strong></div>
           <div>Call Active: {isCallActive ? "Yes" : "No"}</div>
           <div>Transcript Count: {transcript.length}</div>
