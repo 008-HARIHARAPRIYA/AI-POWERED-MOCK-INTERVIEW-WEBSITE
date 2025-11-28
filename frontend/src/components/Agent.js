@@ -94,46 +94,48 @@ function Agent() {
   }, []);
 
   const saveTranscript = async () => {
-    try {
-      const userId = user.userId;
-      
-      console.log('💾 Sending transcript for analysis (userId):', userId);
+  try {
+    const userId = user.userId;
+    
+    console.log('💾 Sending transcript for analysis (userId):', userId);
 
-      const response = await fetch(
-        "http://localhost:5000/api/vapi/process-transcript",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            userId: userId,
-            transcript: transcriptRef.current,
-          }),
-        }
-      );
-
-      const data = await response.json();
-
-      if (data.success) {
-        setMessage(`Interview completed! Analysis complete.`);
-        
-        setTimeout(() => {
-          window.location.href = "/dashboard";
-        }, 2000);
-      } else {
-        setMessage("Analysis completed: " + data.message);
-        setTimeout(() => {
-          window.location.href = "/dashboard";
-        }, 2000);
+    const response = await fetch(
+      `${process.env.REACT_APP_API_URL || "http://localhost:5000"}/api/vapi/process-transcript`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: userId,
+          transcript: transcriptRef.current,
+        }),
       }
-    } catch (error) {
-      console.error('Error processing transcript:', error);
-      setMessage("Interview completed. Check console for analysis.");
+    );
+
+    const data = await response.json();
+
+    if (data.success) {
+      setMessage(`Interview completed! Feedback saved. (ID: ${data.interviewId})`);
+      
+      // Store the interview ID for viewing feedback
+      localStorage.setItem("lastInterviewId", data.interviewId);
+      
+      setTimeout(() => {
+        window.location.href = "/dashboard";
+      }, 2000);
+    } else {
+      setMessage("Analysis completed: " + data.message);
       setTimeout(() => {
         window.location.href = "/dashboard";
       }, 2000);
     }
-  };
-
+  } catch (error) {
+    console.error('Error processing transcript:', error);
+    setMessage("Interview completed. Check console for analysis.");
+    setTimeout(() => {
+      window.location.href = "/dashboard";
+    }, 2000);
+  }
+};
   const startInterview = async () => {
     try {
       const userId = user.userId;

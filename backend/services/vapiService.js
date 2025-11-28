@@ -1,4 +1,4 @@
-// vapiService.js - FINAL COMPLETE VERSION (Use This!)
+// vapiService.js - COMPLETE VERSION WITH FEEDBACK STORAGE
 import fetch from "node-fetch";
 import Interview from "../models/Interview.js";
 import getRandomInterviewCover from "../utils/getRandomInterviewCover.js";
@@ -128,7 +128,7 @@ The questions are going to be read by a voice assistant so do not use "/" or "*"
 };
 
 /**
- * Process Transcript - Print to Console and Analyze with Gemini (NO DB STORAGE)
+ * Process Transcript - Analyze with Gemini and Store in DB
  * @param {Number} userId - User ID
  * @param {Array} transcript - Array of transcript messages
  * @returns {Object} Result object with success status and feedback
@@ -163,13 +163,55 @@ export const processTranscript = async (userId, transcript) => {
   console.log("\n📊 STRUCTURED FEEDBACK:");
   console.log(JSON.stringify(feedbackStructured, null, 2));
 
-  // ✅ NO DATABASE STORAGE - Just return success
-  return {
-    success: true,
-    message: "Transcript analyzed successfully",
-    feedback: feedbackStructured,
-    transcriptLength: transcript.length
-  };
+  // ✅ SAVE FEEDBACK TO DATABASE
+  try {
+    console.log("\n💾 SAVING FEEDBACK TO DATABASE...");
+    
+    // Find the most recent interview for this user
+    const interview = await Interview.findOne({ userId: Number(userId) })
+      .sort({ _id: -1 }); // Get the latest interview
+    
+    if (!interview) {
+      throw new Error(`No interview found for userId: ${userId}`);
+    }
+
+    console.log("📄 Found interview:", interview._id);
+
+    // Update the interview with transcript and feedback
+    interview.transcript = transcript;
+    interview.feedback = {
+      ...feedbackStructured,
+      analyzedAt: new Date()
+    };
+    interview.completedAt = new Date();
+
+    await interview.save();
+
+    console.log("✅✅✅ FEEDBACK SAVED TO DATABASE");
+    console.log("📄 Interview ID:", interview._id);
+    console.log("👤 UserId:", interview.userId);
+    console.log("📊 Feedback Categories Saved:", Object.keys(feedbackStructured).length);
+
+    return {
+      success: true,
+      message: "Transcript analyzed and saved successfully",
+      feedback: feedbackStructured,
+      interviewId: interview._id.toString(),
+      transcriptLength: transcript.length
+    };
+
+  } catch (dbError) {
+    console.error("❌ DATABASE SAVE FAILED:", dbError);
+    console.error("Error details:", dbError.message);
+    
+    // Even if DB save fails, return the feedback
+    return {
+      success: false,
+      message: `Analysis completed but DB save failed: ${dbError.message}`,
+      feedback: feedbackStructured,
+      transcriptLength: transcript.length
+    };
+  }
 };
 
 /**
