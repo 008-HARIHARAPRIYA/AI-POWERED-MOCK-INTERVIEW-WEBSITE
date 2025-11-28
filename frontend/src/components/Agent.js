@@ -1,10 +1,12 @@
-// Agent.js - UPDATED VERSION
+// Agent.js - UPDATED VERSION WITH FEEDBACK REDIRECT
 import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import Vapi from "@vapi-ai/web";
 import Navbar from "./Navbar";
 import "./Agent.css";
 
 function Agent() {
+  const navigate = useNavigate();
   const [animate, setAnimate] = useState(false);
   const [isCallActive, setIsCallActive] = useState(false);
   const [message, setMessage] = useState("Click 'Start Interview' to begin");
@@ -94,48 +96,50 @@ function Agent() {
   }, []);
 
   const saveTranscript = async () => {
-  try {
-    const userId = user.userId;
-    
-    console.log('💾 Sending transcript for analysis (userId):', userId);
+    try {
+      const userId = user.userId;
+      
+      console.log('💾 Sending transcript for analysis (userId):', userId);
 
-    const response = await fetch(
-      `${process.env.REACT_APP_API_URL || "http://localhost:5000"}/api/vapi/process-transcript`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: userId,
-          transcript: transcriptRef.current,
-        }),
+      const response = await fetch(
+        `${process.env.REACT_APP_API_URL || "http://localhost:5000"}/api/vapi/process-transcript`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId: userId,
+            transcript: transcriptRef.current,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (data.success) {
+        setMessage(`✅ Interview completed! Generating your feedback...`);
+        
+        // Store the interview ID
+        localStorage.setItem("lastInterviewId", data.interviewId);
+        
+        // Redirect to feedback page after 1.5 seconds
+        setTimeout(() => {
+          navigate(`/feedback/${data.interviewId}`);
+        }, 1500);
+      } else {
+        setMessage("Analysis completed: " + data.message);
+        setTimeout(() => {
+          navigate("/dashboard");
+        }, 2000);
       }
-    );
-
-    const data = await response.json();
-
-    if (data.success) {
-      setMessage(`Interview completed! Feedback saved. (ID: ${data.interviewId})`);
-      
-      // Store the interview ID for viewing feedback
-      localStorage.setItem("lastInterviewId", data.interviewId);
-      
+    } catch (error) {
+      console.error('Error processing transcript:', error);
+      setMessage("Interview completed. Check console for analysis.");
       setTimeout(() => {
-        window.location.href = "/dashboard";
-      }, 2000);
-    } else {
-      setMessage("Analysis completed: " + data.message);
-      setTimeout(() => {
-        window.location.href = "/dashboard";
+        navigate("/dashboard");
       }, 2000);
     }
-  } catch (error) {
-    console.error('Error processing transcript:', error);
-    setMessage("Interview completed. Check console for analysis.");
-    setTimeout(() => {
-      window.location.href = "/dashboard";
-    }, 2000);
-  }
-};
+  };
+
   const startInterview = async () => {
     try {
       const userId = user.userId;

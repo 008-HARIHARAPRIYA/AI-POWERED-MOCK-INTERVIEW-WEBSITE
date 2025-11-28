@@ -3,6 +3,7 @@ import LandingPage from "./components/LandingPage";
 import AuthPage from "./components/AuthPage";
 import Home from "./components/Home";
 import Agent from "./components/Agent";
+import Feedback from "./components/Feedback";
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
         <Route path="/auth" element={<AuthPage />} />
         <Route path="/home" element={<Home />} />
         <Route path="/agent" element={<Agent />} />
+        <Route path="/feedback/:interviewId" element={<Feedback />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
