@@ -1,4 +1,4 @@
-// Agent.js - UPDATED VERSION WITH FEEDBACK REDIRECT
+// Agent.js - FIXED VERSION WITHOUT DUPLICATES
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import Vapi from "@vapi-ai/web";
@@ -93,7 +93,7 @@ function Agent() {
         vapiRef.current.stop();
       }
     };
-  }, []);
+  }, [navigate]);
 
   const saveTranscript = async () => {
     try {

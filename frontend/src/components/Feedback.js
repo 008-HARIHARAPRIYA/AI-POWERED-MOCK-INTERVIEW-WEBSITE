@@ -28,40 +28,40 @@ function Feedback() {
   }
 
   useEffect(() => {
+    const fetchFeedback = async () => {
+      try {
+        const id = interviewId || localStorage.getItem("lastInterviewId");
+        
+        if (!id) {
+          setError("No interview ID found");
+          setLoading(false);
+          return;
+        }
+
+        console.log("📊 Fetching feedback for interview:", id);
+
+        const response = await fetch(
+          `${process.env.REACT_APP_API_URL || "http://localhost:5000"}/api/interviews/${id}`
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch feedback");
+        }
+
+        const data = await response.json();
+        console.log("✅ Feedback loaded:", data);
+        
+        setFeedbackData(data);
+        setLoading(false);
+      } catch (err) {
+        console.error("❌ Error fetching feedback:", err);
+        setError(err.message);
+        setLoading(false);
+      }
+    };
+
     fetchFeedback();
   }, [interviewId]);
-
-  const fetchFeedback = async () => {
-    try {
-      const id = interviewId || localStorage.getItem("lastInterviewId");
-      
-      if (!id) {
-        setError("No interview ID found");
-        setLoading(false);
-        return;
-      }
-
-      console.log("📊 Fetching feedback for interview:", id);
-
-      const response = await fetch(
-        `${process.env.REACT_APP_API_URL || "http://localhost:5000"}/api/interviews/${id}`
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch feedback");
-      }
-
-      const data = await response.json();
-      console.log("✅ Feedback loaded:", data);
-      
-      setFeedbackData(data);
-      setLoading(false);
-    } catch (err) {
-      console.error("❌ Error fetching feedback:", err);
-      setError(err.message);
-      setLoading(false);
-    }
-  };
 
   const calculateOverallScore = () => {
     if (!feedbackData?.feedback) return 0;
